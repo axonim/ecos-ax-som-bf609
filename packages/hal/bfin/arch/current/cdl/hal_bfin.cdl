@@ -1,0 +1,474 @@
+# ====================================================================
+#
+#      hal_bfin.cdl
+#
+#      BlackFin architectural HAL package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      andre, Pavel Azizov <pavel.azizov@axonim.by> AXONIM Devices
+# Contributors:   Pavel Azizov <pavel.azizov@axonim.by> AXONIM Devices
+# Date:           2013-08-08
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_BFIN {
+    display "BlackFin architecture"
+    parent        CYGPKG_HAL
+    hardware
+    include_dir   cyg/hal
+    define_header hal_bfin.h
+    description   "
+        The BlackFin architecture HAL package provides generic support
+        for this processor architecture developed by Analog Devices.
+	It is also necessary to select a CPU variant and a specific
+	target platform HAL package."
+
+    cdl_interface CYGINT_HAL_BFIN_VARIANT {
+        display  "Number of variant implementations in this configuration"
+	 requires 1 == CYGINT_HAL_BFIN_VARIANT
+    }
+
+    compile       hal_misc.c context.S mmu.S flush.S bfin-stub.c
+    compile       hal_syscall.c
+
+    make {
+        <PREFIX>/lib/vectors.o : <PACKAGE>/src/vectors.S
+        $(CC) -Wp,-MD,vectors.tmp $(INCLUDE_PATH) $(CFLAGS) -c -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 vectors.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm vectors.tmp
+    }
+
+    make {
+        <PREFIX>/lib/target.ld: <PACKAGE>/src/bfin.ld
+        $(CC) -E -P -Wp,-MD,target.tmp -DEXTRAS=1 -xc $(INCLUDE_PATH) $(CFLAGS) -o $@ $<
+        @echo $@ ": \\" > $(notdir $@).deps
+        @tail -n +2 target.tmp >> $(notdir $@).deps
+        @echo >> $(notdir $@).deps
+        @rm target.tmp
+    }
+
+    define_proc {
+##	puts $::cdl_header "#define HAL_ARCH_PROGRAM_NEW_STACK hal_arch_program_new_stack"
+    puts $::cdl_system_header "#define CYGBLD_HAL_TARGET_H <pkgconf/hal_bfin.h>"
+    }
+
+
+    cdl_option CYGBLD_LINKER_SCRIPT {
+        display "Linker script"
+        flavor data
+	no_define
+        calculated  { "src/bfin.ld" }
+    }
+
+    cdl_option CYGNUM_HAL_BFIN_INTERRUPTS_EXTENDED {
+            display       "extended interrupt system"
+            flavor        bool
+            default_value 0
+            description   "
+                this will activate direct access and mapping of system controller interrupts.
+                Core interrupts 7-15 will disappear as they will be handled by a HAL trampoline
+                to call the correct system interrupt vsr.
+                Please check the settings of the system interrupts assignments to the core interrupt
+                levels as these determine the priority of the interrupts in the variant HAL."
+    }
+
+    cdl_component CYGHWR_BFIN_FREQUENCY_SETTINGS {
+        display "CPU, System, and PLL clock settings"
+        flavor none
+        no_define
+
+        cdl_component CYGHWR_BFIN_RTC_SETTINGS {
+            display "HAL RTC settings"
+            flavor none
+            no_define
+
+            cdl_option CYGNUM_HAL_RTC_PERIOD {
+                display       "RTC PERIOD"
+                flavor        data
+                calculated    ((CYGHWR_HAL_BFIN_CORE_CLOCK*10))
+                description   "
+                    RTC period value these settings lead to a default of 100 ticks per second."
+            }
+    
+            cdl_option CYGNUM_HAL_RTC_NUMERATOR {
+                display       "RTC PERIOD"
+                flavor        data
+                calculated    1000000000
+                description   "
+                    RTC period numerator."
+            }
+
+            cdl_option CYGNUM_HAL_RTC_DENOMINATOR {
+                display       "RTC PERIOD"
+                flavor        data
+                calculated    1000
+                description   "
+                    RTC period denominator."
+            }
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_ENFORCE_SETTINGS {
+            display       "HAL must activate settings"
+            flavor        bool
+            default_value 1
+            description   "
+                Determines whether the HAL must activate the settings during startup or whether they are
+                provided by the bootloader / ROM monitor.
+                Attention: be sure that the correct settings are used or the system services will fail due
+                to wrong timings."
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_DF {
+            display       "Half input frequency"
+            flavor        bool
+            default_value 0
+            description   "
+                this will reduce the power consumption if enabled but also limit the system speeds."
+        }
+    
+        cdl_option CYGNUM_HAL_BFIN_PLL_MULTIPLIER {
+            display       "multiplier for the PLL"
+            flavor        data
+            legal_values  1 to 127
+            default_value 20
+            description   "
+                multiplier for the PLL."
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_PLL_FREQUENCY {
+            display       "VCO frequency (MHz)"
+            flavor        data
+            calculated    { CYGNUM_HAL_BFIN_DF==1 ? (CYGNUM_HAL_BFIN_CRYSTAL_FREQUENCY * CYGNUM_HAL_BFIN_PLL_MULTIPLIER *0.5)
+                                                  : (CYGNUM_HAL_BFIN_CRYSTAL_FREQUENCY * CYGNUM_HAL_BFIN_PLL_MULTIPLIER) }
+            description   "
+                frequency of the PLL (VCO)."
+
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_CORE_CLOCK_DIVIDER {
+            display       "Core clock divider"
+            flavor        data
+            legal_values  1 to 31
+            default_value 1
+            description   "
+                Selects the divider of the core clock related to the VCO and
+                will determine the clock speed."
+        }
+
+        cdl_option CYGHWR_HAL_BFIN_CORE_CLOCK {
+        display "CPU frequency (MHz)"
+        flavor  data
+        requires CYGHWR_HAL_BFIN_CORE_CLOCK >= CYGNUM_HAL_BFIN_SYSTEM_CLOCK
+        calculated (CYGNUM_HAL_BFIN_PLL_FREQUENCY / CYGNUM_HAL_BFIN_CORE_CLOCK_DIVIDER)
+            description "
+                This option contains the frequency of the CPU in MegaHertz.
+                Choose the frequency to match the processor you have. This
+                may affect thing like serial device, interval clock and
+                memory access speed settings."
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_SYSTEM_CLOCK_DIVIDER {
+            display       "System clock divider"
+            flavor        data
+            legal_values  1 to 31
+            default_value 2
+            description   "
+                Selects the divider of the system clock related to the VCO and
+                will determine the clock speed."
+        }
+
+        cdl_option CYGNUM_HAL_BFIN_SYSTEM_CLOCK {
+            display       "SCLK (MHz)"
+            flavor        data
+            calculated    (CYGNUM_HAL_BFIN_PLL_FREQUENCY / CYGNUM_HAL_BFIN_SYSTEM_CLOCK_DIVIDER)
+            description   "
+                System clock speed in MHz."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_S0SEL_DIVIDER {
+            display       "S0SEL divider"
+            flavor        data
+            legal_values  1 to 7
+            default_value 2
+            description   "
+                Selects the divider of the System clock 0 related to the SYSSEL and
+                will determine the clock speed."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_S0CLK_CLOCK {
+            display       "SCLK0 (MHz)"
+            flavor        data
+            calculated    (CYGNUM_HAL_BFIN_SYSTEM_CLOCK / CYGNUM_HAL_BFIN_S0SEL_DIVIDER)
+            description   "
+                SCLK0 clock speed in MHz."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_S1SEL_DIVIDER {
+            display       "S1SEL divider"
+            flavor        data
+            legal_values  1 to 7
+            default_value 2
+            description   "
+                Selects the divider of the System clock 1 related to the SYSSEL and
+                will determine the clock speed."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_S1CLK_CLOCK {
+            display       "SCLK1 (MHz)"
+            flavor        data
+            calculated    (CYGNUM_HAL_BFIN_SYSTEM_CLOCK / CYGNUM_HAL_BFIN_S1SEL_DIVIDER)
+            description   "
+                SCLK1 clock speed in MHz."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_DSEL_DIVIDER {
+            display       "DSEL divider"
+            flavor        data
+            legal_values  1 to 31
+            default_value 2
+            description   "
+                Selects the divider of the DCLK clock related to the VCO and
+                will determine the clock speed."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_DCLK_CLOCK {
+            display       "DCLK (MHz)"
+            flavor        data
+            calculated    (CYGNUM_HAL_BFIN_PLL_FREQUENCY / CYGNUM_HAL_BFIN_DSEL_DIVIDER)
+            description   "
+                DCLK clock speed in MHz."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_OSEL_DIVIDER {
+            display       "OSEL divider"
+            flavor        data
+            legal_values  1 to 127
+            default_value 4
+            description   "
+                Selects the divider of the OCLK clock related to the VCO and
+                will determine the clock speed."
+        }
+        
+        cdl_option CYGNUM_HAL_BFIN_OUTCLK_CLOCK {
+            display       "OUTCLK (MHz)"
+            flavor        data
+            calculated    (CYGNUM_HAL_BFIN_PLL_FREQUENCY / CYGNUM_HAL_BFIN_OSEL_DIVIDER)
+            description   "
+                OUTCLK clock speed in MHz."
+        }
+        
+    }
+
+    cdl_component CYGBLD_GLOBAL_OPTIONS {
+        display "Global build options"
+        flavor  none
+        parent  CYGPKG_NONE
+        description   "
+	    Global build options including control over
+	    compiler flags, linker flags and choice of toolchain."
+		
+		cdl_option CYGBLD_GLOBAL_COMMAND_PREFIX {
+            display "Global command prefix"
+            flavor  data
+            no_define
+            default_value { "bfin-elf"}
+            description "
+                This option specifies the command prefix used when
+                invoking the build tools."
+        }
+		
+		    cdl_option CYGBLD_GLOBAL_CFLAGS {
+            display "Global compiler flags"
+            flavor  data
+            no_define
+#            default_value { "-Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fno-leading-underscore" }
+            default_value { "-Wundef -Woverloaded-virtual -g -O2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -Wall -Wstrict-prototypes -mcsync-anomaly -mlong-calls" }
+            description   "
+                This option controls the global compiler flags which are used to
+                compile all packages by default. Individual packages may define
+                options which override these global flags."
+        }
+
+		cdl_option CYGBLD_GLOBAL_LDFLAGS {
+            display "Global linker flags"
+            flavor  data
+            no_define
+            default_value { "-g -nostdlib -Wl,--gc-sections -Wl,-static --allow-multiple-definition" }
+            description   "
+               This option controls the global compiler flags which are used to
+                compile all packages by default. Individual packages may define
+                options which override these global flags."
+        }
+	}		
+	
+    cdl_component CYGPKG_REDBOOT_MMU_CACHE_OPTIONS {
+        display       "MMU and caching"
+        flavor        none
+        no_define
+        active_if     CYGPKG_HAL_BFIN
+
+
+        cdl_component CYGHWR_HAL_BFIN_USE_MMU_PROTECTION {
+            display "use protection mechanisms provided by mmu"
+            flavor  bool
+            default_value 0
+            description "
+                This option activates the use of protection mechanisms of the
+                Blackfin MMU. Setting this option to disabled has the following
+                effects:
+                all data areas can be executed
+                all data areas can be read and written in user and supervisor mode
+                This option does not affect cacheability." 
+
+
+            cdl_component CYGNUM_HAL_BFIN_USE_MMU_MAP_CODE_SECTION {
+            display "allow data access to code sections"
+            flavor  bool
+            default_value 0
+            description "
+                This option allows code sections to be accessed by data oriented
+                functions. Instruction fetches are not affected by this option."
+        
+
+                cdl_option CYGNUM_HAL_BFIN_USE_MMU_CODE_ALLOW_READWRITE {
+                display "allow write access to code sections"
+                flavor  bool
+                default_value 0
+                description "
+                    This options allow to restrict access to code sections to read
+                    access only."
+                }
+            }
+
+            cdl_option CYGNUM_HAL_BFIN_EXECUTE_TEXT_ONLY {
+                display "only execute text segments"
+                flavor  bool
+                default_value 0
+                description "
+                    This option defines if the execution of code should be restricted to
+                    code segments or if all parts of memory can be executed."
+            }
+        }
+
+
+        cdl_component CYGHWR_HAL_BFIN_USE_CACHES {
+            display "CPU cache configuration"
+            flavor  bool
+            no_define
+            default_value 1
+            requires 1 == CYGHWR_HAL_BFIN_USE_MMU_PROTECTION
+            description "
+                This option enables or disables the use of caches globaly."
+
+            cdl_option CYGSEM_HAL_BFIN_DCACHE_ALLOCATE_WRITE  {
+                display "use allocate on write if write-through caching is enabled"
+                flavor  bool
+                default_value 0
+                active_if  CYGSEM_HAL_ENABLE_DCACHE_ON_STARTUP
+                description "
+                    This options determines whether allocate on write will be used in
+                    conjunction with the write-through caching strategy."
+            }
+
+            cdl_option CYGNUM_HAL_BFIN_USE_ICACHE_PAGE_SIZE {
+                display "default ICACHE page size in kB"
+                flavor  data
+                legal_values { 1 4 1024 4096 }
+                default_value 4096
+                description "
+                    Defines the standard page size. The HAL will use this page size if possible.
+                    The HAL might use smaller page sizes if appropriate."
+            }
+
+            cdl_option CYGNUM_HAL_BFIN_USE_DCACHE_PAGE_SIZE {
+                display "default DCACHE page size in kB"
+                flavor  data
+                legal_values { 1 4 1024 4096 }
+                default_value 4096
+                description "
+                    Defines the standard page size. The HAL will use this page size if possible.
+                    The HAL might use smaller page sizes if appropriate."
+            }
+        }
+    }
+
+
+#    cdl_component CYGPKG_REDBOOT_BFIN_OPTIONS {
+#        display       "Redboot for BFIN options"
+#        flavor        none
+#        no_define
+#        parent        CYGPKG_REDBOOT
+#        active_if     CYGPKG_REDBOOT
+#        description   "
+#            This option lists the target's requirements for a valid Redboot
+#            configuration."
+#
+#        cdl_component CYGSEM_REDBOOT_BFIN_LINUX_BOOT {
+#            active_if      CYGBLD_BUILD_REDBOOT_WITH_EXEC
+#            display        "Support booting Linux via RedBoot"
+#            flavor         bool
+#            default_value  1
+#            description    "
+#               This option allows RedBoot to support booting of a Linux kernel."
+#            compile -library=libextras.a redboot_linux_exec.c
+#
+#            cdl_option CYGDAT_REDBOOT_BFIN_LINUX_BOOT_ENTRY {
+#                display        "Default kernel entry address"
+#                flavor         data
+#                default_value  0x80100750
+#            }
+#
+#            cdl_option CYGDAT_REDBOOT_BFIN_LINUX_BOOT_ARGV_ADDR {
+#                display        "Default argv address"
+#                flavor         data
+#                default_value  0x80080000
+#            }
+#
+#            cdl_option CYGDAT_REDBOOT_BFIN_LINUX_BOOT_COMMAND_LINE {
+#                display        "Default COMMAND_LINE"
+#                flavor         data
+#                default_value  { "" }
+#            }
+#       }
+#    }
+
+}

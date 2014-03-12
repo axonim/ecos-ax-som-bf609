@@ -1,0 +1,71 @@
+// eCos memory layout - Fri Oct 20 06:11:28 2000
+
+// This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+//    ram         : ORIGIN = 0x00000004, LENGTH = 0x10000000
+    ram1        : ORIGIN = 0x00000004, LENGTH = 0x00FFFFFC
+    ram2        : ORIGIN = 0x01000000, LENGTH = 0x01000000
+    ram3        : ORIGIN = 0x02000000, LENGTH = 0x01000000
+    ram         : ORIGIN = 0x03000000, LENGTH = 0x01000000
+    async       : ORIGIN = 0xB0000000, LENGTH = 0x10000000
+    sram_l2     : ORIGIN = 0xC8080000, LENGTH = 0x00040000
+    dsram_a_c1  : ORIGIN = 0xFF400000, LENGTH = 0x00040000
+    dsram_b_c1  : ORIGIN = 0xFF500000, LENGTH = 0x00004000
+    isram_c1    : ORIGIN = 0xFF600000, LENGTH = 0x00010000
+    isram_ch_c1 : ORIGIN = 0xFF610000, LENGTH = 0x00004000
+    scrtchpd_c1 : ORIGIN = 0xFF700000, LENGTH = 0x00001000
+    dsram_a_c0  : ORIGIN = 0xFF800000, LENGTH = 0x00004000
+    dsram_b_c0  : ORIGIN = 0xFF900000, LENGTH = 0x00004000
+    isram_c0    : ORIGIN = 0xFFA00000, LENGTH = 0x00010000
+    isram_ch_c0 : ORIGIN = 0xFFA10000, LENGTH = 0x00004000
+}
+
+PHDRS
+{
+    ram1        PT_NULL ;
+    ram2        PT_NULL ;
+    ram3        PT_NULL ;
+    ram         PT_LOAD ;
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    
+    SECTION_rom_vectors (ram, 0x03000000, LMA_EQ_VMA)
+    SECTION_text (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ROMISC (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_RELOCS (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fini (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata1 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ctors (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_dtors (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_devtab (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_data (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_data1 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_got (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_dynamic (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_sdata (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_lit8 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_lit4 (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+	SECTION_system_data (ram, ALIGN (0x4), LMA_EQ_VMA)
+    
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    
+    .ramdata_buf1 : { . = ALIGN (4); *(.ramdata_buf1) } > ram1 : ram1
+    .ramdata_buf2 : { . = ALIGN (4); *(.ramdata_buf2) } > ram2 : ram2
+    .ramdata_buf3 : { . = ALIGN (4); *(.ramdata_buf3) } > ram3 : ram3
+    
+    SECTION_init (isram_c0, 0xFFA00000, LMA_EQ_VMA)
+     
+    SECTIONS_END
+}

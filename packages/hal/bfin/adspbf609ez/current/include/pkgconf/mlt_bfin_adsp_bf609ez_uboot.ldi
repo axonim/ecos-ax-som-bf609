@@ -1,0 +1,73 @@
+// eCos memory layout - Fri Oct 20 06:11:28 2000
+
+// This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
+#include <pkgconf/hal_bfin_bf60x.h>
+
+#define CYGMEM_REGION_ram (0x00000000)
+#ifdef CYGPKG_HAL_BFIN_BF537
+#define CYGMEM_REGION_ram_SIZE (0x04000000)
+#elif defined(CYGPKG_HAL_BFIN_BF533)
+    #define CYGMEM_REGION_ram_SIZE (0x08000000)
+#else
+    #error please select a valid processor type
+#endif
+
+#define CYGMEM_REGION_ram_INVALID (CYGMEM_REGION_ram + CYGMEM_REGION_ram_SIZE)
+
+MEMORY
+{
+    ram : ORIGIN = 0x00000000, LENGTH = CYGMEM_REGION_ram_SIZE
+    rom : ORIGIN = 0x20000000, LENGTH = 0x400000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+#ifndef CYG_HAL_STARTUP_RAM
+    SECTION_hal_vectors (rom, 0x20000000, LMA_EQ_VMA)
+    SECTION_rom_vectors (ram, (CYGMEM_REGION_ram_INVALID - 0x80000), FOLLOWING (.romvector))
+    SECTION_init (ram, (CYGMEM_REGION_ram_INVALID - 0x60000), FOLLOWING (.halmain))
+    SECTION_text (ram, ALIGN (0x4), FOLLOWING (.init))
+    SECTION_fini (ram, ALIGN (0x4), FOLLOWING (.text))
+    SECTION_rodata (ram, ALIGN (0x8), FOLLOWING (.fini))
+    SECTION_rodata1 (ram, ALIGN (0x8), FOLLOWING (.rodata))
+    SECTION_data1 (ram, ALIGN (0x8), FOLLOWING (.rodata1))
+    SECTION_ctors (ram, ALIGN (0x4), FOLLOWING (.data1))
+    SECTION_dtors (ram, ALIGN (0x4), FOLLOWING (.ctors))
+    SECTION_eh_frame (ram, ALIGN (0x4), FOLLOWING (.dtors))
+    SECTION_got (ram, ALIGN (0x4), FOLLOWING (.eh_frame))
+    SECTION_dynamic (ram, ALIGN (0x4), FOLLOWING (.got))
+    SECTION_sdata (ram, ALIGN (0x4), FOLLOWING (.dynamic))
+    SECTION_lit8 (ram, ALIGN (0x8), FOLLOWING (.sdata))
+    SECTION_lit4 (ram, ALIGN (0x8), FOLLOWING (.lit8))
+    SECTION_gcc_except_table (ram, ALIGN (0x4), FOLLOWING (.lit4))
+   // SECTION_all_others(ram, ALIGN (0x4), FOLLOWING (.gcc_except_table))
+    SECTION_system_data (ram, (CYGMEM_REGION_ram_INVALID - 0x40000), FOLLOWING (.gcc_except_table))
+#else
+    SECTION_rom_vectors (ram, (CYGMEM_REGION_ram_INVALID - 0x80000), LMA_EQ_VMA)
+    SECTION_init (ram, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_text (ram, (CYGMEM_REGION_ram_INVALID - 0x60000), FOLLOWING (.init))
+    SECTION_fini (ram, ALIGN (0x4), FOLLOWING (.text))
+    SECTION_rodata (ram, ALIGN (0x8), FOLLOWING (.fini))
+    SECTION_rodata1 (ram, ALIGN (0x8), FOLLOWING (.rodata))
+    SECTION_data1 (ram, ALIGN (0x8), FOLLOWING (.rodata1))
+    SECTION_ctors (ram, ALIGN (0x4), FOLLOWING (.data1))
+    SECTION_dtors (ram, ALIGN (0x4), FOLLOWING (.ctors))
+    SECTION_eh_frame (ram, ALIGN (0x4), FOLLOWING (.dtors))
+    SECTION_got (ram, ALIGN (0x4), FOLLOWING (.eh_frame))
+    SECTION_dynamic (ram, ALIGN (0x4), FOLLOWING (.got))
+    SECTION_sdata (ram, ALIGN (0x4), FOLLOWING (.dynamic))
+    SECTION_lit8 (ram, ALIGN (0x8), FOLLOWING (.sdata))
+    SECTION_lit4 (ram, ALIGN (0x8), FOLLOWING (.lit8))
+    SECTION_gcc_except_table (ram, ALIGN (0x4), FOLLOWING (.lit4))
+    SECTION_system_data (ram, ALIGN(0x4), FOLLOWING (.gcc_except_table))
+#endif
+    SECTION_data (ram, (CYGMEM_REGION_ram_INVALID - 0x20000), FOLLOWING (.system_data))
+    SECTION_devtab (ram, ALIGN (0x4), FOLLOWING (.data))
+    SECTION_sbss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (ram, ALIGN (0x8), LMA_EQ_VMA)
+    CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}

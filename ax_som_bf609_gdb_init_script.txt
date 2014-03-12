@@ -1,0 +1,19 @@
+echo Programming clocks\n
+set *0xFFCA8008 = 0x01024241
+set *0xFFCA8000 = 0x00001400
+echo Delay\n
+
+set *0xFFCA8008 = 0x41024241
+echo Delay\n
+
+echo Programming DDR memory controller\n
+set *0xFFC80080 = 0x0000054B
+
+set *0xFFC80040 = 0x00000422
+set *0xFFC80044 = 0x20E0A424
+set *0xFFC80048 = 0x3020079E
+set *0xFFC8004C = 0x0032020D
+set *0xFFC80060 = 0x00000842
+set *0xFFC8009C = 0x050000C4
+set *0xFFC80094 = 0x00000000
+set *0xFFC80004 = 0x00000904

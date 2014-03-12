@@ -1,0 +1,186 @@
+#==========================================================================
+#
+#      bf60x_eth.cdl
+#
+#      Ethernet drivers for bf60x Cores
+#
+#==========================================================================
+## ####ECOSGPLCOPYRIGHTBEGIN####                                            
+## -------------------------------------------                              
+## This file is part of eCos, the Embedded Configurable Operating System.   
+## Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006 Free Software Foundation, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under    
+## the terms of the GNU General Public License as published by the Free     
+## Software Foundation; either version 2 or (at your option) any later      
+## version.                                                                 
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT      
+## ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
+## for more details.                                                        
+##
+## You should have received a copy of the GNU General Public License        
+## along with eCos; if not, write to the Free Software Foundation, Inc.,    
+## 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+##
+## As a special exception, if other files instantiate templates or use      
+## macros or inline functions from this file, or you compile this file      
+## and link it with other works to produce a work based on this file,       
+## this file does not by itself cause the resulting work to be covered by   
+## the GNU General Public License. However the source code for this file    
+## must still be made available in accordance with section (3) of the GNU   
+## General Public License v2.                                               
+##
+## This exception does not invalidate any other reasons why a work based    
+## on this file might be covered by the GNU General Public License.         
+## -------------------------------------------                              
+## ####ECOSGPLCOPYRIGHTEND####                                              
+#==========================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):    Siarhei Vasiliuk (Axonim)
+# Contributors:
+# Date:         2013-09-21
+# Purpose:
+# Description:
+#
+#####DESCRIPTIONEND####
+#
+#========================================================================*/
+
+cdl_package CYGPKG_DEVS_ETH_BF60X {
+    display       "Blackfin  bf60x ethernet driver"
+    parent        CYGPKG_IO_ETH_DRIVERS
+    active_if     CYGPKG_IO_ETH_DRIVERS
+    implements    CYGHWR_NET_DRIVERS
+    implements    CYGHWR_NET_DRIVER_ETH0
+    implements    CYGINT_IO_ETH_MULTICAST
+
+    include_dir   net
+    description   "
+       Ethernet driver for Blackfin bf60x core. "
+
+    compile       -library=libextras.a if_bf609.c
+
+    cdl_interface CYGHWR_DEV_ETH_BF60X_USE_RMII {
+        display   "Use RMII instead of MII"
+        flavor    bool
+        description "
+            If RMII is used on the device, then the platform HAL will
+            implement this interface."
+    }
+
+    cdl_option CYGPKG_DEVS_ETH_BF60X_DEBUG_LEVEL {
+         display "Driver debug output level"
+         flavor  data
+         legal_values {0 1 2}
+         default_value 1
+         description   "
+             This option specifies the level of debug data output by
+             the bf60x ethernet device driver. A value of 0 signifies
+             no debug data output; 1 signifies normal debug data
+             output; and 2 signifies maximum debug data output (not
+             suitable when GDB and application are sharing an ethernet
+             port)."
+    }
+
+    cdl_component CYGPKG_DEVS_ETH_BF60X_EMAC0 {
+        display         "EMAC0 initialization data"
+        flavor          bool
+        default_value   0
+    
+    
+        cdl_option CYGNUM_DEVS_ETH_BF60X_EMAC0_RX_BUFS {
+            display       "Number of RX buffers"
+            flavor        data
+            default_value 32
+            description   "
+                Number of receive buffers. Each buffer is 128 bytes in size"
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_BF60X_EMAC0_TX_BUFS {
+            display       "Number of TX buffers"
+            flavor        data
+            default_value 10
+            description   "
+                Number of transmit buffer descriptors. We need one descriptor
+                for each element in the scatter/gather list."
+        }
+
+        cdl_option CYGPKG_DEVS_ETH_BF60X_EMAC0_PHYADDR {
+            display "PHY MII address"
+            flavor  data
+            legal_values 0 to 31
+            default_value 1
+            description   "This option specifies the MII address of the PHY"
+        }
+
+       cdl_option CYGPKG_DEVS_ETH_BF60X_EMAC0_MACADDR {
+            display "Ethernet station (MAC) address for eth0"
+            flavor  data
+            default_value {"0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC"}
+            description   "The default ethernet station address. This is the
+                           MAC address used when no value is found in the
+                           RedBoot FLASH configuration field."
+        }
+
+    } 
+    cdl_component CYGPKG_DEVS_ETH_BF60X_EMAC1 {
+        display         "EMAC1 initialization data"
+        flavor          bool
+        default_value   0
+    
+    
+        cdl_option CYGNUM_DEVS_ETH_BF60X_EMAC1_RX_BUFS {
+            display       "Number of RX buffers"
+            flavor        data
+            default_value 32
+            description   "
+                Number of receive buffers. Each buffer is 128 bytes in size"
+        }
+
+        cdl_option CYGNUM_DEVS_ETH_BF60X_EMAC1_TX_BUFS {
+            display       "Number of TX buffers"
+            flavor        data
+            default_value 10
+            description   "
+                Number of transmit buffer descriptors. We need one descriptor
+                for each element in the scatter/gather list."
+        }
+
+        cdl_option CYGPKG_DEVS_ETH_BF60X_EMAC1_PHYADDR {
+            display "PHY MII address"
+            flavor  data
+            legal_values 0 to 31
+            default_value 1
+            description   "This option specifies the MII address of the PHY"
+        }
+
+        cdl_option CYGPKG_DEVS_ETH_BF60X_EMAC1_MACADDR {
+            display "Ethernet station (MAC) address for eth0"
+            flavor  data
+            default_value {"0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC"}
+            description   "The default ethernet station address. This is the
+                           MAC address used when no value is found in the
+                           RedBoot FLASH configuration field."
+        }
+
+    }    
+    
+    
+    
+    
+    cdl_option  CYGPKG_DEVS_ETH_BF60X_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "-D_KERNEL -D__ECOS" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the Atmel bf60x ethernet driver package.
+            These flags are used in addition to the set of global flags."
+    }
+}
+
+# EOF bf60x_eth.cdl

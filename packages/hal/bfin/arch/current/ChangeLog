@@ -1,0 +1,134 @@
+2014-03-12 Pavel Azizov, AXONIM Devices, <pavel.azizov@axonim.by>
+        * added BF60x architecture support
+2006-09-19  Andre Liesk  <andre.liesk@s2001.TUC>
+        * extended interrupt system support, this will map the system interrupt controller inputs
+          directly as available interrupts into the system following the core non assignable ints   
+        * the old interrupt system is the simple one, access to the interrupts of the SIC is only
+          possible via direct querying of the interrupts while serving a core interrupt
+          special ASSIGN and MASk, UNMASK macros are supplied to mask/unmask SIC's and to
+          assign their core priority level
+        * extended interrupt system does not provide MASK and UNMASK specifically for SIC's as this
+          is included in the normal interrupt mask und unmask macros
+          the ASSIGN macro does still exist
+        * ASSIGN macro will leave the assigned interrupt masked
+        * ASSIGN macro works with input number of the SIC while the normal interrupt mask and unmask
+          macros work with the interrupt mapped to the system
+2006-09-01  Andre Liesk  <andre.liesk@s2001.TUC>
+        * context switching changed to properly switch the processor state needed
+          to resume a thread
+        * scheduler activities only allowed in general purpose interrupts and
+          eCOS kernel exception handlers
+        * scheduling activities not allowed in NMI, RESET or while in EXCEPTION state
+          the includes non default VSR
+2006-08-25  Andre Liesk  <andre.liesk@s2001.TUC>
+        * changed exception handling to counterfeit priority inversion and lower
+          interrupt latency
+        * exceptions are now processed on the level they have been caused so exceptions in
+          a thread or interrupt does not block higher priority interrupts
+        * hal internal exception related to protection and caching (MMU) are handled on the
+          exception level and kept short this is due to synchronization for MMU table access
+2006-08-21  Andre Liesk  <andre.liesk@s2001.TUC>
+        * serial driver passes non interrupt driven mode tests
+2006-08-17  Andre Liesk  <andre.liesk@s2001.TUC>
+        * extension of HAL_SAVED_REGISTERS structure to support
+          non-exception VSR handling of exceptions related to security violations
+2006-08-10  Andre Liesk  <andre.liesk@s2001.TUC>
+        * support for CACHING with one default page size for ICACHE and 4M pages for DCACHE
+2006-08-01  Andre Liesk  <andre.liesk@s2001.TUC>
+        * finished support for ethernet device support
+        * including support for memory mapping change to avoid FLASH collisions
+2006-07-20  Andre Liesk  <andre.liesk@s2001.TUC>
+        * started support for ethernet, serial device driver, watchdog hardware device
+        * support for RedBoot 
+2006-06-21  Andre Liesk  <andre.liesk@s2001.TUC>
+        * changed context switch code in the part of the save old context section
+        * context test is incomplete and reports a pass even though the code doesn't work
+          properly
+        * clock and alarms seem to be working
+        * clock based preemtion doesn't work, it seems as if interrupt_end is hanging sometimes
+2006-06-10  Andre Liesk  <andre.liesk@s2001.TUC>
+        * problem with gcc compiler and ld leads to changes in the function names
+          assembler functions need to carry an underscore in the bfin hals if called
+          by c functions
+        * reset and interrupt vectors are put in the text section for uboot because
+          it is not loading the separate section
+        * temporary changes to cyg_invoke_constuctors in hal_misc to skip the last entry in
+          the CTOR list, it seems that the last constructor is either invalid or the
+          label is misplaced by ld -> has to be fixed, investigation via emulation to follow
+        * first successful start through startup up to the main function of the user function
+        * undefine problem when calling kernel thread functions -> to be investigated
+        * RAISE 15 causes reset while processing interrupt 15 replaced with JUMP for uboot
+        * added startup type uboot
+2006-06-01  Andre Liesk  <andre.liesk@s2001.TUC>
+        * first successful compilation of the bfin sources
+        * LO(), and HI() have to be omitted with gcc assembler
+2006-05-30  Andre Liesk  <andre.liesk@s2001.TUC>
+        * interrupt vsr
+        * exception vsr
+2006-05-25  Andre Liesk  <andre.liesk@s2001.TUC>
+        * code reordering to avoid some penalties
+2006-05-24  Andre Liesk  <andre.liesk@s2001.TUC>
+        * starting implementation of vector.S
+        * exception_trampoline
+        * interrupt trampoline
+        * common interrupt trampoline
+2006-05-22  Andre Liesk  <andre.liesk@s2001.TUC>
+        * hal_io.h reused unchanged, changes not necessary due to memomry mapped
+          io registers
+        * hal_intr.h defined enable, disable, restore and query interrupt state
+        * context.S removed errored code
+        * replaced code for accessing core MMR's IPEND and IMASK to be stored
+          in the context state
+        * create dummy hal_cache.h without caching, no caching used for inital
+          port because mmu handling is required for caches
+2006-05-18  Andre Liesk  <andre.liesk@s2001.TUC>
+        * create dummy GDB get/set register functions
+        * create initial switch and load context functions
+        * create setjump and longjump functions
+        * create register definitions
+        * create symbolic names for core and system MMR addresses in memory
+        * define exception numbers and masks for core registers
+
+2006-05-17  Andre Liesk  <andre.liesk@s2001.TUC>
+        * creation of LSB and MSB macros
+        * create initial minimum stack size
+
+2006-05-08  Andre Liesk  <andre.liesk@s2001.TUC>
+
+		* initial creation of CDL file
+		* initial specification of SAVED_REGISTER struct	
+
+//===========================================================================
+//####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+//
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later version.
+//
+// eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with eCos; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+//
+// As a special exception, if other files instantiate templates or use macros
+// or inline functions from this file, or you compile this file and link it
+// with other works to produce a work based on this file, this file does not
+// by itself cause the resulting work to be covered by the GNU General Public
+// License. However the source code for this file must still be made available
+// in accordance with section (3) of the GNU General Public License.
+//
+// This exception does not invalidate any other reasons why a work based on
+// this file might be covered by the GNU General Public License.
+//
+// Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+// at http://sources.redhat.com/ecos/ecos-license/
+// -------------------------------------------
+//####ECOSGPLCOPYRIGHTEND####
+//===========================================================================

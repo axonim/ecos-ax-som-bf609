@@ -1,0 +1,84 @@
+##=============================================================================
+##
+##      flash_w25xxx.cdl
+##
+##      W25Xxx SPI flash driver configuration options.
+##
+##=============================================================================
+##=============================================================================
+#######DESCRIPTIONBEGIN####
+##
+## Author(s):   Daniel Helgason
+## Date:        20011-01-01
+## Purpose:     Configure W25Xxx SPI flash driver.
+##
+######DESCRIPTIONEND####
+##
+##=============================================================================
+
+cdl_package CYGPKG_DEVS_FLASH_SPI_W25XXX {
+    display "W25Xxx flash memory support"
+    parent	CYGPKG_IO_FLASH
+    active_if	CYGPKG_IO_FLASH CYGPKG_IO_SPI
+    implements	CYGHWR_IO_FLASH_DEVICE
+    implements  CYGHWR_IO_FLASH_INDIRECT_READS 
+    include_dir	cyg/io
+    compile	w25xxx.c
+
+    description "
+        Flash memory support for Windbond W25Xxx SPI flash devices and 
+        compatibles.  This driver implements the V2 flash driver API"
+
+cdl_option CYGNUM_DEVS_FLASH_SPI_W25XXX_READ_BLOCK_SIZE {
+    display       "Maximum read block size"
+    description   "
+        In theory it is possible to read back the entire flash contents using
+        a single SPI transaction.  However, some SPI bus drivers have a maximum 
+        transaction size - for example transactions may be limited to the 
+        length of a DMA bounce buffer.  Setting this option to a non-zero value 
+        specifies the maximum SPI bus transfer size which will be used when 
+        reading back data.  Read requests for areas larger than this block size 
+        will automatically be split into a series of smaller SPI bus transactions.
+    "
+    flavor        data 
+    default_value 0
+}
+
+    cdl_component CYGOPT_DEVS_FLASH_SPI_W25XXX_SUPPORT_DEBUG {
+        display "Support debug messages for SPI FLASH W25XXX driver"
+        flavor  bool
+        default_value 0
+        description   "This option enables debug information for Analog Devices SPI FLASH W25XXX driver."
+    }	
+    
+    cdl_option CYGPKG_DEVS_FLASH_SPI_W25XXX_CFLAGS_ADD {
+        display "Additional compiler flags"
+        flavor  data
+        no_define
+        default_value { "" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the flash device drivers. These flags are used in addition
+            to the set of global flags."
+    }
+
+    cdl_option CYGPKG_DEVS_FLASH_SPI_W25XXX_CFLAGS_REMOVE {
+        display "Suppressed compiler flags"
+        flavor  data
+        no_define
+        default_value { "" }
+        description   "
+            This option modifies the set of compiler flags for
+            building the flash device drivers. These flags are removed from
+            the set of global flags if present."
+    }
+    
+    cdl_option CYGPKG_DEVS_FLASH_SPI_W25XXX_TESTS {
+        display "SPI Flash W25xxx test"
+        flavor  data
+        calculated { "tests/w25xxx_test" }         
+        description   "
+            This option specifies the set of tests for the SPI w25xxx memory device drivers."
+    }
+
+}

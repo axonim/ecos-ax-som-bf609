@@ -1,0 +1,46 @@
+// eCos memory layout - Fri Oct 20 06:11:28 2000
+
+// This is a generated file - do not edit
+
+#include <cyg/infra/cyg_type.inc>
+
+MEMORY
+{
+    ram         : ORIGIN = 0x00000100, LENGTH = 0x10000000
+    async       : ORIGIN = 0xB0000000, LENGTH = 0x10000000
+    sram_l2     : ORIGIN = 0xC8080000, LENGTH = 0x40000
+    dsram_a_c0  : ORIGIN = 0xFF800000, LENGTH = 0x4000
+    dsram_b_c0  : ORIGIN = 0xFF900000, LENGTH = 0x4000
+    isram_c0    : ORIGIN = 0xFFA00000, LENGTH = 0x10000
+    isram_ch_c0 : ORIGIN = 0xFFA10000, LENGTH = 0x4000
+}
+
+SECTIONS
+{
+    SECTIONS_BEGIN
+    SECTION_rom_vectors (sram_l2, 0xC8080000, LMA_EQ_VMA)
+    SECTION_init (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_text (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ROMISC (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_RELOCS (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_fini (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_rodata1 (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_gcc_except_table (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_ctors (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_dtors (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_devtab (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_data (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_data1 (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_eh_frame (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+    SECTION_got (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_dynamic (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_sdata (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_lit8 (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_lit4 (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_sbss (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+    SECTION_bss (sram_l2, ALIGN (0x8), LMA_EQ_VMA)
+	SECTION_system_data (sram_l2, ALIGN (0x4), LMA_EQ_VMA)
+	CYG_LABEL_DEFN(__heap1) = ALIGN (0x8);
+    SECTIONS_END
+}

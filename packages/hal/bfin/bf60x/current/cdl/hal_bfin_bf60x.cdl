@@ -1,0 +1,179 @@
+# ====================================================================
+#
+#      hal_bfin_bf60x.cdl
+#
+#      BFIN/60x variant architectural HAL package configuration data
+#
+# ====================================================================
+#####ECOSGPLCOPYRIGHTBEGIN####
+## -------------------------------------------
+## This file is part of eCos, the Embedded Configurable Operating System.
+## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+##
+## eCos is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free
+## Software Foundation; either version 2 or (at your option) any later version.
+##
+## eCos is distributed in the hope that it will be useful, but WITHOUT ANY
+## WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+## for more details.
+##
+## You should have received a copy of the GNU General Public License along
+## with eCos; if not, write to the Free Software Foundation, Inc.,
+## 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+##
+## As a special exception, if other files instantiate templates or use macros
+## or inline functions from this file, or you compile this file and link it
+## with other works to produce a work based on this file, this file does not
+## by itself cause the resulting work to be covered by the GNU General Public
+## License. However the source code for this file must still be made available
+## in accordance with section (3) of the GNU General Public License.
+##
+## This exception does not invalidate any other reasons why a work based on
+## this file might be covered by the GNU General Public License.
+##
+## Alternative licenses for eCos may be arranged by contacting Red Hat, Inc.
+## at http://sources.redhat.com/ecos/ecos-license/
+## -------------------------------------------
+#####ECOSGPLCOPYRIGHTEND####
+# ====================================================================
+######DESCRIPTIONBEGIN####
+#
+# Author(s):      Pavel Azizov
+# Contributors:
+# Date:           2012-08-06
+#
+#####DESCRIPTIONEND####
+#
+# ====================================================================
+
+cdl_package CYGPKG_HAL_BFIN_BF60x {
+    display       "BF60x variant"
+    parent        CYGPKG_HAL_BFIN
+    hardware
+    include_dir   cyg/hal
+    define_header hal_bfin_bf60x.h
+    description   "
+           The BF533 stamp architecture HAL package provides generic support
+           for this processor architecture. It is also necessary to
+           select a specific target platform HAL package."
+
+    cdl_option CYGPKG_HAL_BFIN_BF609 {
+            display       "BlackFin DSP BF609"
+            default_value 0
+            implements    CYGINT_HAL_BFIN_VARIANT
+    }
+    
+    cdl_component CYGPKG_HAL_BFIN_SIC_UNMASK_OPTIONS {
+            display       "BlackFin DSP SIC unmask"
+            flavor        none
+            no_define
+            active_if   !CYGNUM_HAL_BFIN_INTERRUPTS_EXTENDED
+            description   "This option provides direct control over the
+                           MASK register of the System interrupt controller.
+                           It is important to unmask all interrupts required
+                           by the system as there is no portable way of accessing
+                           the SIC if extended interrupts are not used.
+                           These options have no effect if extended interrupts are
+                           used as the macros for MASKING and UNMASKING will also
+                           work on the SIC mask register.
+                           PLEASE NOTE: The unmasking is done in groups of nibbles.
+                           (4 bits) The bits affected have a one to one mapping to the
+                           interrupt sources on the SIC.
+                           EXAMPLE: unmask interrupt 28-31 means
+                           The lowest bit in the group is equals one if set.
+                           All others equal increasing powers of 2.
+                           The highest bit in the group equals 8 if set.
+                           The mask is the sum of all bits set.
+                           0 -> all masked
+                           to 15 -> all unmasked
+                "
+            
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP7 {
+            display       "unmask interrupt 28-31 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            active_if     CYGPKG_HAL_BFIN_BF537
+            description   "unmask interrupt 28-31 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP6 {
+            display       "unmask interrupt 24-27 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            active_if     CYGPKG_HAL_BFIN_BF537
+            description   "unmask interrupt 24-27 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP5 {
+            display       "unmask interrupt 20-23 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 20-23 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP4 {
+            display       "unmask interrupt 16-19 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 16-19 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP3 {
+            display       "unmask interrupt 12-15 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 12-15 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP2 {
+            display       "unmask interrupt 8-11 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 8-11 on SIC
+                "
+            }
+
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP1 {
+            display       "unmask interrupt 4-7 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 4-7 on SIC
+                "
+            }
+
+            cdl_option CYGNUM_HAL_BFIN_SIC_UNMASK_GROUP0 {
+            display       "unmask interrupt 0-3 on SIC"
+            flavor        data
+            legal_values  0 to 15
+            default_value 0
+            description   "unmask interrupt 0-3 on SIC
+                "
+            }
+
+    }
+
+    compile       var_misc.c variant.S
+
+
+
+}
