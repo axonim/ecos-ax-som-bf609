@@ -147,6 +147,72 @@ phy_cmd(eth_phy_access_t *f, cyg_uint32 cmd)
 
     return retval;
 }
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION
+externC bool
+_eth_phy_init(eth_phy_access_t *f, unsigned long mac_ba, int phy_addr_set)
+{
+    int addr;
+    unsigned short state;
+    unsigned long id = 0;
+    struct _eth_phy_dev_entry *dev;
+
+    if (f->init_done) return true;
+    f->mac_baseaddr = mac_ba;
+    (f->init)();
+
+    f->init_done = true;
+    if (phy_addr_set != -1)
+    {
+        eth_phy_printf(" PHY param\n");
+        addr = phy_addr_set;
+        if (_eth_phy_read(f, PHY_ID1, addr, &state)) {
+            id = state << 16;
+            if (_eth_phy_read(f, PHY_ID2, addr, &state)) {
+                id |= state;
+                f->phy_addr = addr;
+                eth_phy_printf(" PHY device - id: %x\n", (unsigned int) id);
+                for (dev = __ETH_PHY_TAB__; dev != &__ETH_PHY_TAB_END__;  dev++) {
+                    if (dev->id == id) {
+                        eth_phy_printf("PHY: %s at addr %x\n", dev->name, f->phy_addr);
+                        f->dev = dev;
+                        return true;
+                    }
+                }
+            }
+        }
+        f->init_done = false;
+        
+    } else {
+
+        eth_phy_printf(" loking for phy\n");
+        // Scan to determine PHY address
+        for (addr = 0;  addr < 0x20;  addr++) {
+            if (_eth_phy_read(f, PHY_ID1, addr, &state)) {
+                id = state << 16;
+                if (_eth_phy_read(f, PHY_ID2, addr, &state)) {
+                    id |= state;
+                    f->phy_addr = addr;
+                    //eth_phy_printf(" PHY device - id: %x\n", id);
+                    for (dev = __ETH_PHY_TAB__; dev != &__ETH_PHY_TAB_END__;  dev++) {
+                        if (dev->id == id) {
+                            eth_phy_printf("PHY: %s at addr %x\n", dev->name, f->phy_addr);
+                            f->dev = dev;
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        if (addr >= 0x20)
+        {
+            // Can't handle this PHY
+            eth_phy_printf("Unsupported PHY device - id: %x\n", (unsigned int) id);
+        }
+        f->init_done = false;
+    }
+    return false;
+}
+#else
 
 externC bool
 _eth_phy_init(eth_phy_access_t *f)
@@ -166,6 +232,10 @@ _eth_phy_init(eth_phy_access_t *f)
             if (_eth_phy_read(f, PHY_ID2, addr, &state)) {
                 id |= state;
                 f->phy_addr = addr;
+
+                //TUPN.ADD.Test
+                eth_phy_printf("PHY id=%X, addr=%d\n", id, addr);
+                //TUPN.ADD.Test
                 for (dev = __ETH_PHY_TAB__; dev != &__ETH_PHY_TAB_END__;  dev++) {
                     if (dev->id == id) {
                         eth_phy_printf("PHY: %s at addr %x\n", dev->name, f->phy_addr);
@@ -184,6 +254,7 @@ _eth_phy_init(eth_phy_access_t *f)
     f->init_done = false;
     return false;
 }
+#endif
 
 externC void
 _eth_phy_reset(eth_phy_access_t *f)
@@ -205,7 +276,12 @@ _eth_phy_write(eth_phy_access_t *f, int reg, int addr, unsigned short data)
     if (f->ops_type == PHY_BIT_LEVEL_ACCESS_TYPE) {
         phy_cmd(f, MII_Start | MII_Write | MII_Phy(addr) | MII_Reg(reg) | MII_TA | data);
     } else {
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION
+        (f->ops.reg_level_ops.put_reg)(reg, addr, data, f->mac_baseaddr);
+#else
         (f->ops.reg_level_ops.put_reg)(reg, addr, data);
+#endif
+
     }
 }
 
@@ -223,7 +299,12 @@ _eth_phy_read(eth_phy_access_t *f, int reg, int addr, unsigned short *val)
         *val = ret;
         return true;
     } else {
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION
+        return (f->ops.reg_level_ops.get_reg)(reg, addr, val, f->mac_baseaddr);
+#else
         return (f->ops.reg_level_ops.get_reg)(reg, addr, val);
+#endif
+
     }
 }
 

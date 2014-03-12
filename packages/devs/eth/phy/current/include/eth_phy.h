@@ -10,7 +10,7 @@
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
 // -------------------------------------------                              
 // This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003, 2010 Free Software Foundation, Inc.                        
+// Copyright (C) 2003 Free Software Foundation, Inc.                        
 //
 // eCos is free software; you can redistribute it and/or modify it under    
 // the terms of the GNU General Public License as published by the Free     
@@ -54,6 +54,8 @@
 #define PHY_BIT_LEVEL_ACCESS_TYPE 0
 #define PHY_REG_LEVEL_ACCESS_TYPE 1
 
+#include <pkgconf/devs_eth_phy.h>
+
 // Physical device access - defined by hardware instance
 typedef struct {
     int ops_type;  // 0 => bit level, 1 => register level
@@ -68,11 +70,22 @@ typedef struct {
             void (*set_dir)(int);
         } bit_level_ops;
         struct {
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION        
+            void (*put_reg)(int reg, int unit, unsigned short data, unsigned long mac_ba);
+            bool (*get_reg)(int reg, int unit, unsigned short *data, unsigned long mac_ba);
+#else
+
             void (*put_reg)(int reg, int unit, unsigned short data);
             bool (*get_reg)(int reg, int unit, unsigned short *data);
+#endif
+
         } reg_level_ops;
     } ops;
     int phy_addr;
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION
+    unsigned long mac_baseaddr;
+#endif
+
     struct _eth_phy_dev_entry *dev;  // Chip access functions
 } eth_phy_access_t;
 
@@ -84,12 +97,16 @@ static eth_phy_access_t _l = {PHY_BIT_LEVEL_ACCESS_TYPE, false, _init, _reset, \
 static eth_phy_access_t _l = {PHY_REG_LEVEL_ACCESS_TYPE, false, _init, _reset, \
                               {.reg_level_ops = {_put_reg, _get_reg}}}
 
-#define ETH_PHY_STAT_LINK   0x0001   // Link up/down
-#define ETH_PHY_STAT_100MB  0x0002   // Connection is 100Mb/10Mb
-#define ETH_PHY_STAT_FDX    0x0004   // Connection is full/half duplex
-#define ETH_PHY_STAT_1000MB 0x0008   // Connection is 1Gb
+#define ETH_PHY_STAT_LINK  0x0001   // Link up/down
+#define ETH_PHY_STAT_100MB 0x0002   // Connection is 100Mb/10Mb
+#define ETH_PHY_STAT_FDX   0x0004   // Connection is full/half duplex
+#define ETH_PHY_STAT_1000MB 0x0008   // Connection is 1000Mb
 
+#if CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION
+externC bool _eth_phy_init(eth_phy_access_t *f, unsigned long mac_ba, int phy_addr_set);
+#else
 externC bool _eth_phy_init(eth_phy_access_t *f);
+#endif
 externC void _eth_phy_reset(eth_phy_access_t *f);
 externC int  _eth_phy_state(eth_phy_access_t *f);
 externC int  _eth_phy_cfg(eth_phy_access_t *f, int mode);

@@ -1,8 +1,8 @@
 //==========================================================================
 //
-//      dev/KSZ8041.c
+//      dev/88E1111.c
 //
-//      Ethernet transceiver (PHY) support for Micrel KSZ8041
+//      Ethernet transceiver (PHY) support for Marvell 88E1111
 //
 //==========================================================================
 // ####ECOSGPLCOPYRIGHTBEGIN####                                            
@@ -39,11 +39,12 @@
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
-// Author(s):    Uwe Kindler <uwe_kindler@web.de>
-// Contributors: oli@snr.ch
-// Date:         2008-09-18
-// Purpose:
-// Description:  Support for ethernet PHY Micrel KSZ8041
+// Author(s):    ITR-GmbH
+// Contributors:
+// Date:         2012-08-10
+// Purpose
+// 
+// Description:  Support for ethernet PHY Marvell 88E1111
 //
 //
 //####DESCRIPTIONEND####
@@ -71,31 +72,56 @@
 //==========================================================================
 //                                DEFINES
 //==========================================================================
-// 100BASE-TX PHY Control Register
-#define PHY_100BASE_CTRL                0x1f	
+// PHY Control Register
+#define PHY_CONTROL                             0x1f
+#define PHY_CONTROL_SPEED_1000_MASK             (1 << 6)                
+#define PHY_CONTROL_SPEED_100_MASK              (1 << 5)
+#define PHY_CONTROL_SPEED_10_MASK               (1 << 4)
+#define PHY_CONTROL_DUPLEX_MASK                 (1 << 3)
+#define PHY_CONTROL_INTERRUPT_LEVEL_MASK        (1 << 14)
 
-#define PHY_100BASE_CTRL_OP_MODE_MASK   (0x07 << 2)
-#define PHY_100BASE_CTRL_AN_MODE        (0x00 << 2)
-#define PHY_100BASE_CTRL_10T_HDX        (0x01 << 2)
-#define PHY_100BASE_CTRL_100T_HDX       (0x02 << 2)
-#define PHY_100BASE_CTRL_DEFAULT        (0x03 << 2)
-#define PHY_100BASE_CTRL_10T_FDX        (0x05 << 2)
-#define PHY_100BASE_CTRL_100T_FDX       (0x06 << 2)
+#define MII_M1111_PHY_LED_CONTROL       0x18
+#define MII_M1111_PHY_LED_DIRECT        0x4100
+#define MII_M1111_PHY_LED_COMBINE       0x411c
+#define MII_M1111_PHY_EXT_CR            0x14
+#define MII_M1111_RX_DELAY              0x80
+#define MII_M1111_TX_DELAY              0x2
+#define MII_M1111_PHY_EXT_SR            0x1b
+
+#define MII_M1111_HWCFG_MODE_MASK               0xf
+#define MII_M1111_HWCFG_MODE_COPPER_RGMII       0xb
+#define MII_M1111_HWCFG_MODE_FIBER_RGMII        0x3
+#define MII_M1111_HWCFG_MODE_SGMII_NO_CLK       0x4
+#define MII_M1111_HWCFG_FIBER_COPPER_AUTO       0x8000
+#define MII_M1111_HWCFG_FIBER_COPPER_RES        0x2000
+
+#define MII_M1111_COPPER                        0
+#define MII_M1111_FIBER                         1
+
+#define MII_M1011_PHY_STATUS            0x11
+#define MII_M1011_PHY_STATUS_1000       0x8000
+#define MII_M1011_PHY_STATUS_100        0x4000
+#define MII_M1011_PHY_STATUS_SPD_MASK   0xc000
+#define MII_M1011_PHY_STATUS_FULLDUPLEX 0x2000
+#define MII_M1011_PHY_STATUS_RESOLVED   0x0800
+#define MII_M1011_PHY_STATUS_LINK       0x0400
+
+# define BMCR_SPEED1000 0x40
 
 //==========================================================================
 // Query the 100BASE-TX PHY Control Register and return a status bitmap
 // indicating the state of the physical connection
 //==========================================================================
 
-#ifdef  CYGDBG_DEVS_ETH_PHY
+#ifdef CYGDBG_DEVS_ETH_PHY
 void
-ksz8041_diag (eth_phy_access_t * f)
+m88e1111_diag (eth_phy_access_t * f)
 {
 
   cyg_uint32 i;
   cyg_uint16 reg;
 
-  eth_phy_printf ("KSZ8041 MIIM Register setings:\n");
+  eth_phy_printf ("88E1111 PHY Register setings:\n");
 
   for (i = 0; i < 0x20; i++) {
     if (i % 2 == 0) {
@@ -106,11 +132,33 @@ ksz8041_diag (eth_phy_access_t * f)
       eth_phy_printf ("%04x\n", reg);
     }
   }
+  /* Extended registers dump */
+  for (i = 0x100; i < 0x108; i++) {
+    if (i % 2 == 0) {
+      _eth_phy_read (f, i, f->phy_addr, &reg);
+      eth_phy_printf ("r%02x: %04x ", i, reg);
+    } else {
+      _eth_phy_read (f, i, f->phy_addr, &reg);
+      eth_phy_printf ("%04x\n", reg);
+    }
+  }
+  
 }
 #endif
 
+void m88e1111_phy_reset(eth_phy_access_t *f)
+{
+
+}
+
+extern int m88e1111_phy_cfg(eth_phy_access_t *f, int mode)
+{
+
+	return _eth_phy_state(f);
+}
+
 static bool
-ksz8041_stat (eth_phy_access_t * f, int *state)
+m88e1111_stat (eth_phy_access_t * f, int *state)
 {
 
   cyg_uint16 phy_state;
@@ -119,13 +167,13 @@ ksz8041_stat (eth_phy_access_t * f, int *state)
   cyg_uint32 ms;
 
 #ifdef  CYGDBG_DEVS_ETH_PHY
-  ksz8041_diag (f);
+  m88e1111_diag (f);
 #endif
 
   if (_eth_phy_read (f, PHY_BMSR, f->phy_addr, &phy_state)) {
     if ((phy_state & PHY_BMSR_AUTO_NEG) == 0) {
 
-      eth_phy_printf ("... waiting for auto-negotiation");
+      eth_phy_printf ("... waiting for auto-negotiation\n");
 
       for (tries = 0; tries < CYGINT_DEVS_ETH_PHY_AUTO_NEGOTIATION_TIME;
            tries++) {
@@ -155,28 +203,20 @@ ksz8041_stat (eth_phy_access_t * f, int *state)
         *state |= ETH_PHY_STAT_LINK;
       }
       
-      _eth_phy_read (f, PHY_100BASE_CTRL, f->phy_addr, &phy_100ctrl_reg);
-      phy_100ctrl_reg &= PHY_100BASE_CTRL_OP_MODE_MASK;
-      switch (phy_100ctrl_reg) {
-        case PHY_100BASE_CTRL_10T_HDX:
-          break;
-          
-        case PHY_100BASE_CTRL_100T_HDX:
-          *state |= ETH_PHY_STAT_100MB;
-          break;
-          
-        case PHY_100BASE_CTRL_10T_FDX:
-          *state |= ETH_PHY_STAT_FDX;
-          break;
-          
-        case PHY_100BASE_CTRL_100T_FDX:
-          *state |= ETH_PHY_STAT_100MB | ETH_PHY_STAT_FDX;
-          break;
-          
-        default:
-          // force to set default 100 Full Duplex
-          *state |= ETH_PHY_STAT_100MB | ETH_PHY_STAT_FDX;
-      }			// switch (phy_100ctrl_reg)
+      _eth_phy_read (f, MII_M1011_PHY_STATUS, f->phy_addr, &phy_100ctrl_reg);
+      
+        //determine duplex
+        if ( phy_100ctrl_reg & MII_M1011_PHY_STATUS_FULLDUPLEX )
+                *state |= ETH_PHY_STAT_FDX;      
+                
+        phy_100ctrl_reg &= MII_M1011_PHY_STATUS_SPD_MASK;
+      
+        if ( phy_100ctrl_reg & MII_M1011_PHY_STATUS_1000 )    /* 1000Mbps */
+                *state |= ETH_PHY_STAT_1000MB;
+        else if ( phy_100ctrl_reg & MII_M1011_PHY_STATUS_100 )/* 100Mbps */
+                *state |= ETH_PHY_STAT_100MB;            //if speed is 10Mbps this bit stays 0
+
+
       
       return true;
     }
@@ -184,4 +224,4 @@ ksz8041_stat (eth_phy_access_t * f, int *state)
   return false;
 }
 
-_eth_phy_dev ("Micrel KSZ8041", 0x00221512, ksz8041_stat)
+_eth_phy_dev ("Marvell 88E1111", 0x01410cc0, m88e1111_stat)

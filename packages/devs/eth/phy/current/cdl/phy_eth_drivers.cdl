@@ -61,6 +61,15 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
 
     compile eth_phy.c
 
+    
+    cdl_option CYGPKG_DEVS_ETH_PHY_EXTENDED_VERSION {
+        display       "Build extended version of PHY library"
+        flavor        bool
+        default_value 1
+        description   "Build extended PHY library for using more 
+                       then one EMAC and more than one PHY with EMAC."
+    }
+
     cdl_option CYGDBG_DEVS_ETH_PHY {
         display       "Enable driver debugging"
         flavor        bool
@@ -78,13 +87,22 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
            before giving up and declaring the link dead/missing."
     }
 
-    cdl_option CYGHWR_DEVS_ETH_PHY_DP8384X {
-        display       "NSDP8384X"
+    cdl_option CYGHWR_DEVS_ETH_PHY_DP83847 {
+        display       "NSDP83847"
         flavor        bool
         default_value 0
         compile       -library=libextras.a DP83847.c
         description "
-          Include support for National Semiconductor DP8384X DsPHYTER II"
+          Include support for National Semiconductor DP83847 DsPHYTER II"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_DP83848 {
+        display       "NSDP83848"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a DP83847.c
+        description "
+          Include support for National Semiconductor DP83848J DsPHYTER Mini LS"
     }
 
     cdl_option CYGHWR_DEVS_ETH_PHY_AM79C874 {
@@ -167,32 +185,41 @@ cdl_package CYGPKG_DEVS_ETH_PHY {
         description "
           Include support for the Micrel KSZ8041 PHY"
     }
-
-    cdl_option CYGHWR_DEVS_ETH_PHY_IP101A {
-        display       "IC+ IP101A"
+    
+    cdl_option CYGHWR_DEVS_ETH_PHY_KSZ808863 {
+        display       "Micrel KSZ8863"
         flavor        bool
         default_value 0
-        compile       -library=libextras.a IP101A.c
+        compile       -library=libextras.a KSZ8863.c
         description "
-          Include support for IC+ IP101A"
+          Include support for the Micrel KSZ8863 PHY"
     }
 
-    cdl_option CYGHWR_DEVS_ETH_PHY_VSC8641 {
-        display       "Vitesse VSC8641"
+    cdl_option CYGHWR_DEVS_ETH_PHY_KSZ9021 {
+        display       "Micrel KSZ9021"
         flavor        bool
         default_value 0
-        compile       -library=libextras.a VSC8641.c
+        compile       -library=libextras.a KSZ9021.c
         description "
-          Include support for Vitesse VSC8641"
+          Include support for the Micrel KSZ9021 PHY"
     }
 
-    cdl_option CYGHWR_DEVS_ETH_PHY_VSC8244 {
-        display       "Vitesse VSC8244"
+    cdl_option CYGHWR_DEVS_ETH_PHY_88E1111 {
+        display       "Marvell 88E1111"
         flavor        bool
         default_value 0
-        compile       -library=libextras.a VSC8244.c
+        compile       -library=libextras.a 88e1111.c
         description "
-          Include support for Vitesse VSC8244"
+          Include support for the Marvell 88E1111 PHY"
+    }
+
+    cdl_option CYGHWR_DEVS_ETH_PHY_88E1116 {
+        display       "Marvell 88E1116"
+        flavor        bool
+        default_value 0
+        compile       -library=libextras.a 88e1116.c
+        description "
+          Include support for the Marvell 88E1116 PHY"
     }
 
 }

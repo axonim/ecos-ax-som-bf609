@@ -2,49 +2,49 @@
 //
 //      dev/DP83847.c
 //
-//      Ethernet transceiver (PHY) support 
+//      Ethernet transceiver (PHY) support
 //
 //==========================================================================
-// ####ECOSGPLCOPYRIGHTBEGIN####                                            
-// -------------------------------------------                              
-// This file is part of eCos, the Embedded Configurable Operating System.   
-// Copyright (C) 2003 Free Software Foundation, Inc.                        
+// ####ECOSGPLCOPYRIGHTBEGIN####
+// -------------------------------------------
+// This file is part of eCos, the Embedded Configurable Operating System.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
-// eCos is free software; you can redistribute it and/or modify it under    
-// the terms of the GNU General Public License as published by the Free     
-// Software Foundation; either version 2 or (at your option) any later      
-// version.                                                                 
+// eCos is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 or (at your option) any later
+// version.
 //
-// eCos is distributed in the hope that it will be useful, but WITHOUT      
-// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or    
-// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License    
-// for more details.                                                        
+// eCos is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
 //
-// You should have received a copy of the GNU General Public License        
-// along with eCos; if not, write to the Free Software Foundation, Inc.,    
-// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.            
+// You should have received a copy of the GNU General Public License
+// along with eCos; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //
-// As a special exception, if other files instantiate templates or use      
-// macros or inline functions from this file, or you compile this file      
-// and link it with other works to produce a work based on this file,       
-// this file does not by itself cause the resulting work to be covered by   
-// the GNU General Public License. However the source code for this file    
-// must still be made available in accordance with section (3) of the GNU   
-// General Public License v2.                                               
+// As a special exception, if other files instantiate templates or use
+// macros or inline functions from this file, or you compile this file
+// and link it with other works to produce a work based on this file,
+// this file does not by itself cause the resulting work to be covered by
+// the GNU General Public License. However the source code for this file
+// must still be made available in accordance with section (3) of the GNU
+// General Public License v2.
 //
-// This exception does not invalidate any other reasons why a work based    
-// on this file might be covered by the GNU General Public License.         
-// -------------------------------------------                              
-// ####ECOSGPLCOPYRIGHTEND####                                              
+// This exception does not invalidate any other reasons why a work based
+// on this file might be covered by the GNU General Public License.
+// -------------------------------------------
+// ####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 //#####DESCRIPTIONBEGIN####
 //
 // Author(s):    gthomas
-// Contributors: ccoutand
+// Contributors:
 // Date:         2003-08-01
-// Purpose:      
-// Description:  Support for ethernet NS DP8384X PHY
-//              
+// Purpose:
+// Description:  Support for ethernet NS DP8384x PHY
+//
 //
 //####DESCRIPTIONEND####
 //
@@ -63,7 +63,7 @@
 #include <cyg/io/eth_phy.h>
 #include <cyg/io/eth_phy_dev.h>
 
-static bool dp8384x_stat(eth_phy_access_t *f, int *state)
+static bool dp83847_stat(eth_phy_access_t *f, int *state)
 {
     unsigned short phy_state;
     int tries;
@@ -94,5 +94,9 @@ static bool dp8384x_stat(eth_phy_access_t *f, int *state)
     return false;
 }
 
-_eth_phy_dev("National Semiconductor DP83847", 0x20005c30, dp8384x_stat)
-_eth_phy_dev("National Semiconductor DP83848C", 0x20005c90, dp8384x_stat)
+#ifdef CYGHWR_DEVS_ETH_PHY_DP83847
+_eth_phy_dev("National Semiconductor DP83847", 0x20005c30, dp83847_stat)
+#endif
+#ifdef CYGHWR_DEVS_ETH_PHY_DP83848
+_eth_phy_dev("National Semiconductor DP83848", 0x20005c90, dp83847_stat)
+#endif
